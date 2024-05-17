@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Cupons</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sora', sans-serif;
+            background-color: #2D2D2D; /* Fundo similar ao da imagem */
+            color: #FFFFFF; /* Letra branca */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            background-color: #1C1C1C;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        form {
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease-in-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        label, input, select, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+        label {
+            color: #F8C425; /* Cor amarela para os rótulos */
+        }
+        input, select, button {
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+        }
+        input, select {
+            background-color: #2D2D2D;
+            color: #FFFFFF;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            background-color: #3E3E3E;
+            outline: none;
+        }
+        button {
+            background-color: #F8C425; /* Amarelo */
+            color: #2D2D2D; /* Cor de fundo similar ao da imagem */
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            background-color: #FFC107; /* Amarelo mais claro */
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #F8C425; /* Amarelo */
+            border-radius: 8px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2D2D2D; /* Cor de fundo similar ao da imagem */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .emoji {
+            position: absolute;
+            font-size: 2em;
+            animation: float 2s ease-in-out infinite;
+            opacity: 0;
+        }
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulador de Cupons</h1>
+        <form id="cuponForm">
+            <label for="amount">Valor do Aporte (R$):</label>
+            <input type="text" id="amount" name="amount" required onblur="formatCurrency(this)">
+
+            <label for="capitalSocial">Saldo de Capital Social (R$):</label>
+            <input type="text" id="capitalSocial" name="capitalSocial" required onblur="formatCurrency(this)">
+
+            <label for="cooperadoType">Tipo de Cooperado:</label>
+            <select id="cooperadoType" name="cooperadoType" required>
+                <option value="pf">Pessoa Física</option>
+                <option value="pj">Pessoa Jurídica</option>
+            </select>
+
+            <label for="firstDeposit">É o primeiro aporte?</label>
+            <select id="firstDeposit" name="firstDeposit" required>
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+            </select>
+
+            <button type="button" onclick="calculateCupons()">Calcular Cupons</button>
+        </form>
+
+        <div id="result"></div>
+        <div id="emojiContainer"></div>
+    </div>
+
+    <script>
+        function formatCurrency(input) {
+            // Converte o valor do input para moeda brasileira
+            let value = parseFloat(input.value.replace(/\./g, '').replace(',', '.'));
+            if (!isNaN(value)) {
+                input.value = value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            } else {
+                input.value = '';
+            }
+        }
+
+        function parseCurrency(value) {
+            // Remove caracteres de formatação de moeda
+            return parseFloat(value.replace(/[^0-9,-]+/g, '').replace(',', '.'));
+        }
+
+        function createEmoji() {
+            const emojiContainer = document.getElementById('emojiContainer');
+            const emojis = ['🎉', '🎊', '🥳', '💵', '💰', '😊', '👏', '🎁', '✨'];
+            const emoji = document.createElement('div');
+            emoji.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+            emoji.classList.add('emoji');
+            emoji.style.left = Math.random() * 100 + 'vw';
+            emoji.style.animationDuration = Math.random() * 2 + 3 + 's';
+            emojiContainer.appendChild(emoji);
+
+            setTimeout(() => {
+                emoji.remove();
+            }, 5000);
+        }
+
+        function startCelebration() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(createEmoji, i * 100);
+            }
+        }
+
+        function animateComponents() {
+            document.querySelector('.container').style.animation = 'fadeIn 1s ease-in-out';
+            document.querySelector('form').style.animation = 'slideIn 0.5s ease-in-out';
+            document.getElementById('result').style.animation = 'pulse 1s infinite';
+        }
+
+        function calculateCupons() {
+            let amount = parseCurrency(document.getElementById('amount').value);
+            let capitalSocial = parseCurrency(document.getElementById('capitalSocial').value);
+            let cooperadoType = document.getElementById('cooperadoType').value;
+            let firstDeposit = document.getElementById('firstDeposit').value;
+
+            let cupons = 0;
+
+            // Calcula o número de cupons baseado no valor do aporte
+            cupons += Math.floor(amount / 250);
+
+            // Adiciona cupons extras para primeiro aporte com capital social >= 7200
+            let extraCupons = 0;
+            if (firstDeposit === 'sim' && amount >= 250 && capitalSocial >= 7200) {
+                extraCupons = 2;
+                cupons += extraCupons;
+            }
+
+            // Dobra os cupons se o valor do aporte for >= 5000 (PF) ou >= 10000 (PJ), exceto os dois extras
+            if (cooperadoType === 'pf' && amount >= 5000) {
+                cupons = (cupons - extraCupons) * 2 + extraCupons;
+            } else if (cooperadoType === 'pj' && amount >= 10000) {
+                cupons = (cupons - extraCupons) * 2 + extraCupons;
+            }
+
+            // Exibir o resultado
+            let resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `Aporte agora, e receba ${cupons} números da sorte.`;
+
+            // Iniciar a comemoração
+            startCelebration();
+            animateComponents();
+        }
+    </script>
+</body>
+</html>
